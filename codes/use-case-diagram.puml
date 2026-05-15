@@ -1,0 +1,56 @@
+@startuml
+left to right direction
+
+skinparam packageStyle rectangle
+
+actor Usuario
+actor Atleta
+actor Administrador as Admin
+
+Usuario <|-- Atleta
+Usuario <|-- Admin
+
+rectangle "Sistema de Gestão Olímpica" {
+    usecase "Realizar login" as UC_Login
+    usecase "Recuperar senha" as UC_ResetPassword
+
+    usecase "Cadastrar competição" as UC_CreateCompetition
+    usecase "Consultar competições" as UC_ViewCompetitions
+
+    usecase "Cadastrar atleta" as UC_CreateAthlete
+    usecase "Inscrever atleta em competição" as UC_RegisterAthlete
+
+    usecase "Cadastrar local" as UC_CreateVenue
+    usecase "Consultar locais" as UC_ViewVenues
+    usecase "Alocar local para competição" as UC_AllocateVenue
+    usecase "Validar disponibilidade de local" as UC_ValidateVenue
+
+    usecase "Registrar resultados" as UC_RegisterResults
+    usecase "Consultar resultados" as UC_ViewResults
+
+    usecase "Gerar relatório de medalhas" as UC_MedalReport
+    usecase "Gerar ranking de países" as UC_CountryRanking
+}
+
+Usuario --> UC_Login
+
+Atleta --> UC_ViewCompetitions
+Atleta --> UC_RegisterAthlete
+Atleta --> UC_ViewResults
+
+Admin --> UC_CreateCompetition
+Admin --> UC_CreateAthlete
+Admin --> UC_CreateVenue
+Admin --> UC_ViewVenues
+Admin --> UC_AllocateVenue
+Admin --> UC_RegisterResults
+Admin --> UC_MedalReport
+
+UC_CreateCompetition ..> UC_ValidateVenue : <<include>>
+UC_AllocateVenue ..> UC_ValidateVenue : <<include>>
+
+UC_ResetPassword ..> UC_Login : <<extend>>
+
+UC_CountryRanking ..> UC_MedalReport : <<extend>>
+
+@enduml
