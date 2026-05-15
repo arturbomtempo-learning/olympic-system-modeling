@@ -11,25 +11,28 @@ Usuario <|-- Atleta
 Usuario <|-- Admin
 
 rectangle "Sistema de Gestão Olímpica" {
-    usecase "Realizar login" as UC_Login
-    usecase "Recuperar senha" as UC_ResetPassword
 
-    usecase "Cadastrar competição" as UC_CreateCompetition
-    usecase "Consultar competições" as UC_ViewCompetitions
+    usecase "UC01 - Realizar login" as UC_Login
+    usecase "UC02 - Recuperar senha" as UC_ResetPassword
 
-    usecase "Cadastrar atleta" as UC_CreateAthlete
-    usecase "Inscrever atleta em competição" as UC_RegisterAthlete
+    usecase "UC03 - Gerenciar competições" as UC_ManageCompetitions
+    usecase "UC04 - Consultar competições" as UC_ViewCompetitions
 
-    usecase "Cadastrar local" as UC_CreateVenue
-    usecase "Consultar locais" as UC_ViewVenues
-    usecase "Alocar local para competição" as UC_AllocateVenue
-    usecase "Validar disponibilidade de local" as UC_ValidateVenue
+    usecase "UC05 - Gerenciar atletas" as UC_ManageAthletes
+    usecase "UC06 - Inscrever atleta em competição" as UC_RegisterAthlete
 
-    usecase "Registrar resultados" as UC_RegisterResults
-    usecase "Consultar resultados" as UC_ViewResults
+    usecase "UC07 - Gerenciar locais" as UC_ManageVenues
+    usecase "UC08 - Alocar local para competição" as UC_AllocateVenue
+    usecase "UC09 - Validar disponibilidade de local" as UC_ValidateVenue
 
-    usecase "Gerar relatório de medalhas" as UC_MedalReport
-    usecase "Gerar ranking de países" as UC_CountryRanking
+    usecase "UC10 - Gerenciar resultados" as UC_ManageResults
+    usecase "UC11 - Consultar resultados" as UC_ViewResults
+
+    usecase "UC12 - Gerar relatório de medalhas" as UC_MedalReport
+    usecase "UC13 - Gerar ranking de países" as UC_CountryRanking
+
+    usecase "UC14 - Enviar confirmação de inscrição" as UC_RegistrationNotification
+    usecase "UC15 - Notificar resultados da competição" as UC_ResultNotification
 }
 
 Usuario --> UC_Login
@@ -38,15 +41,20 @@ Atleta --> UC_ViewCompetitions
 Atleta --> UC_RegisterAthlete
 Atleta --> UC_ViewResults
 
-Admin --> UC_CreateCompetition
-Admin --> UC_CreateAthlete
-Admin --> UC_CreateVenue
-Admin --> UC_ViewVenues
+Admin --> UC_ManageCompetitions
+Admin --> UC_ManageAthletes
+Admin --> UC_ManageVenues
 Admin --> UC_AllocateVenue
-Admin --> UC_RegisterResults
+Admin --> UC_ManageResults
 Admin --> UC_MedalReport
 
-UC_CreateCompetition ..> UC_ValidateVenue : <<include>>
+Admin --> UC_ResultNotification
+UC_ResultNotification --> Atleta
+
+Admin --> UC_RegistrationNotification
+UC_RegistrationNotification --> Atleta
+
+UC_ManageCompetitions ..> UC_ValidateVenue : <<include>>
 UC_AllocateVenue ..> UC_ValidateVenue : <<include>>
 
 UC_ResetPassword ..> UC_Login : <<extend>>
