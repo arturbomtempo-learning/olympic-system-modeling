@@ -1,5 +1,4 @@
 @startuml
-
 skinparam classAttributeIconSize 0
 
 abstract class Usuario {
@@ -35,7 +34,7 @@ class Competicao {
     - nomeModalidade : String
     - data : Date
     - horario : Time
-ß
+
     + Cadastrar()
     + ConsultarInformacoes()
     + ValidarDisponibilidadeLocal()
@@ -84,12 +83,11 @@ Atleta "1" -- "*" Inscricao
 
 Competicao "1" -- "*" Inscricao
 
-Competicao "1" -- "1" Local
+Local "1" -- "*" Competicao
 
 Competicao "1" *-- "*" Resultado
 
 Resultado "*" -- "1" Atleta
 
 Administrador "1" -- "*" Competicao
-
 @enduml
