@@ -1,0 +1,145 @@
+@startuml
+
+autonumber
+
+actor Administrador
+actor Atleta
+
+participant "Tela do Sistema" as Tela
+participant "ControleUsuario" as ControleUsuario
+participant "ControleCompeticao" as ControleCompeticao
+participant "ControleLocal" as ControleLocal
+participant "ControleResultado" as ControleResultado
+
+participant "Competicao" as Competicao
+participant "Inscricao" as Inscricao
+participant "Local" as Local
+participant "Resultado" as Resultado
+
+== Login ==
+
+Administrador -> Tela : realizarLogin()
+
+Tela -> ControleUsuario : autenticarUsuario()
+activate ControleUsuario
+
+ControleUsuario --> Tela : acessoLiberado()
+
+deactivate ControleUsuario
+
+== Cadastro de Competição ==
+
+Administrador -> Tela : cadastrarCompeticao()
+
+Tela -> ControleCompeticao : solicitarCadastro()
+activate ControleCompeticao
+
+ControleCompeticao -> Competicao : criarCompeticao()
+activate Competicao
+
+Competicao --> ControleCompeticao : competicaoCadastrada()
+
+deactivate Competicao
+
+ControleCompeticao --> Tela : cadastroRealizado()
+
+deactivate ControleCompeticao
+
+== Cadastro de Local ==
+
+Administrador -> Tela : cadastrarLocal()
+
+Tela -> ControleLocal : solicitarCadastro()
+activate ControleLocal
+
+ControleLocal -> Local : criarLocal()
+activate Local
+
+Local --> ControleLocal : localCadastrado()
+
+deactivate Local
+
+ControleLocal --> Tela : cadastroRealizado()
+
+deactivate ControleLocal
+
+== Alocação de Local ==
+
+Administrador -> Tela : alocarLocal()
+
+Tela -> ControleCompeticao : solicitarAlocacao()
+activate ControleCompeticao
+
+ControleCompeticao -> Local : verificarDisponibilidade()
+activate Local
+
+Local --> ControleCompeticao : localDisponivel()
+
+deactivate Local
+
+ControleCompeticao -> Competicao : associarLocal()
+activate Competicao
+
+Competicao --> ControleCompeticao : localAssociado()
+
+deactivate Competicao
+
+ControleCompeticao --> Tela : alocacaoConcluida()
+
+deactivate ControleCompeticao
+
+== Inscrição em Competição ==
+
+Atleta -> Tela : inscreverEmCompeticao()
+
+Tela -> ControleCompeticao : solicitarInscricao()
+activate ControleCompeticao
+
+ControleCompeticao -> Inscricao : criarInscricao()
+activate Inscricao
+
+Inscricao --> ControleCompeticao : inscricaoConfirmada()
+
+deactivate Inscricao
+
+ControleCompeticao --> Tela : inscricaoRealizada()
+
+deactivate ControleCompeticao
+
+== Registro de Resultados ==
+
+Administrador -> Tela : registrarResultados()
+
+Tela -> ControleResultado : solicitarRegistro()
+activate ControleResultado
+
+ControleResultado -> Resultado : registrarResultado()
+activate Resultado
+
+Resultado --> ControleResultado : resultadoRegistrado()
+
+deactivate Resultado
+
+ControleResultado --> Tela : registroConcluido()
+
+deactivate ControleResultado
+
+== Relatório de Medalhas ==
+
+Administrador -> Tela : gerarRelatorio()
+
+Tela -> ControleResultado : solicitarRelatorio()
+activate ControleResultado
+
+ControleResultado -> Resultado : gerarRanking()
+activate Resultado
+
+Resultado --> ControleResultado : relatorioGerado()
+
+deactivate Resultado
+
+ControleResultado --> Tela : relatorioExibido()
+
+deactivate ControleResultado
+
+@enduml

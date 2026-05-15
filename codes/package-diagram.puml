@@ -1,0 +1,38 @@
+@startuml
+
+skinparam packageStyle rectangle
+
+package "Gerenciamento de Usuários" <<subsystem>> {
+    class Usuario
+    class Atleta
+    class Administrador
+}
+
+package "Competições Olímpicas" <<subsystem>> {
+    class Competicao
+    class Inscricao
+}
+
+package "Infraestrutura Esportiva" <<subsystem>> {
+    class Local
+}
+
+package "Resultados e Rankings" <<subsystem>> {
+    class Resultado
+}
+
+package "Cadastro de Países" <<subsystem>> {
+    class Pais
+}
+
+"Gerenciamento de Usuários" ..> "Cadastro de Países"
+
+"Gerenciamento de Usuários" ..> "Competições Olímpicas"
+
+"Competições Olímpicas" ..> "Infraestrutura Esportiva"
+
+"Resultados e Rankings" ..> "Competições Olímpicas"
+
+"Resultados e Rankings" ..> "Gerenciamento de Usuários"
+
+@enduml
