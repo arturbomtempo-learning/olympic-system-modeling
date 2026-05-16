@@ -1,43 +1,23 @@
 @startuml
 
 skinparam componentStyle uml2
-skinparam shadowing false
 skinparam packageStyle rectangle
-skinparam linetype ortho
+skinparam shadowing false
 
 top to bottom direction
 
-title Diagrama de Implantação - Sistema de Gestão Olímpica
+title Diagrama de Componentes - Sistema de Gestão Olímpica
 
-node "Vercel" {
+component "Aplicação Web" as WebApp
+component "API Gateway" as Gateway
 
-        artifact "Aplicação React" as ReactApp
-}
+queue "Fila Inscrições" as RegistrationQueue
+queue "Fila Resultados" as ResultQueue
+queue "Fila Notificações" as NotificationQueue
 
-cloud "AWS - API Gateway" {
+component "Serviço Externo\nEmail / WhatsApp" as ExternalNotification
 
-    component "Amazon API Gateway" as ApiGateway
-}
-
-cloud "AWS - Load Balancer" {
-
-    component "Application Load Balancer" as ALB
-}
-
-cloud "AWS - RabbitMQ" {
-
-    node "Amazon EC2" {
-
-        node "Docker Container - RabbitMQ" {
-
-            component "RabbitMQ Broker" as RabbitMQ
-
-            queue "Fila Inscrições" as RegistrationQueue
-            queue "Fila Resultados" as ResultQueue
-            queue "Fila Notificações" as NotificationQueue
-        }
-    }
-}
+WebApp --> Gateway : HTTP
 
 interface "IAuth" as IAuth
 interface "ICompeticoes" as ICompetitions
@@ -46,166 +26,122 @@ interface "IResultados" as IResults
 interface "IRelatorios" as IReports
 interface "ILocais" as IVenues
 interface "IPaises" as ICountries
-
 interface "ISMTP" as ISMTP
-interface "IWhatsApp" as IWhatsApp
 
-cloud "AWS ECS - Autenticação" {
+package "Microsserviço Autenticação" {
 
-    node "Docker Container - Auth" {
+    component "Autenticação" as AuthService
 
-        component "Serviço Autenticação" as AuthService
+    interface "IDBUsuarios" as IDBU
 
-        interface "IDBUsuarios" as IDBU
+    database "PostgreSQL\nUsuários DB" as UserDB
 
-        database "Amazon RDS\nPostgreSQL Usuários" as UserDB
+    AuthService -- IAuth
 
-        AuthService -- IAuth
+    AuthService --( IDBU : TCP/IP
 
-        AuthService --( IDBU : TCP/IP
-
-        UserDB -- IDBU
-    }
+    UserDB -- IDBU
 }
 
-cloud "AWS ECS - Competições" {
+package "Microsserviço Competições" {
 
-    node "Docker Container - Competições" {
+    component "Competições" as CompetitionService
 
-        component "Serviço Competições" as CompetitionService
+    interface "IDBCompeticoes" as IDBC
 
-        interface "IDBCompeticoes" as IDBC
+    database "PostgreSQL\nCompetições DB" as CompetitionDB
 
-        database "Amazon RDS\nPostgreSQL Competições" as CompetitionDB
+    CompetitionService -- ICompetitions
 
-        CompetitionService -- ICompetitions
+    CompetitionService --( IDBC : TCP/IP
 
-        CompetitionService --( IDBC : TCP/IP
-
-        CompetitionDB -- IDBC
-    }
+    CompetitionDB -- IDBC
 }
 
-cloud "AWS ECS - Inscrições" {
+package "Microsserviço Inscrições" {
 
-    node "Docker Container - Inscrições" {
+    component "Inscrições" as RegistrationService
 
-        component "Serviço Inscrições" as RegistrationService
+    interface "IDBInscricoes" as IDBI
 
-        interface "IDBInscricoes" as IDBI
+    database "PostgreSQL\nInscrições DB" as RegistrationDB
 
-        database "Amazon RDS\nPostgreSQL Inscrições" as RegistrationDB
+    RegistrationService -- IRegistrations
 
-        RegistrationService -- IRegistrations
+    RegistrationService --( IDBI : TCP/IP
 
-        RegistrationService --( IDBI : TCP/IP
-
-        RegistrationDB -- IDBI
-    }
+    RegistrationDB -- IDBI
 }
 
-cloud "AWS ECS - Resultados" {
+package "Microsserviço Resultados" {
 
-    node "Docker Container - Resultados" {
+    component "Resultados" as ResultService
 
-        component "Serviço Resultados" as ResultService
+    interface "IDBResultados" as IDBRes
 
-        interface "IDBResultados" as IDBRes
+    database "PostgreSQL\nResultados DB" as ResultDB
 
-        database "Amazon RDS\nPostgreSQL Resultados" as ResultDB
+    ResultService -- IResults
 
-        ResultService -- IResults
+    ResultService --( IDBRes : TCP/IP
 
-        ResultService --( IDBRes : TCP/IP
-
-        ResultDB -- IDBRes
-    }
+    ResultDB -- IDBRes
 }
 
-cloud "AWS ECS - Relatórios" {
+package "Microsserviço Relatórios" {
 
-    node "Docker Container - Relatórios" {
+    component "Relatórios" as ReportService
 
-        component "Serviço Relatórios" as ReportService
+    interface "IDBRelatorios" as IDBR
 
-        interface "IDBRelatorios" as IDBR
+    database "PostgreSQL\nRelatórios DB" as ReportDB
 
-        database "Amazon RDS\nPostgreSQL Relatórios" as ReportDB
+    ReportService -- IReports
 
-        ReportService -- IReports
+    ReportService --( IDBR : TCP/IP
 
-        ReportService --( IDBR : TCP/IP
-
-        ReportDB -- IDBR
-    }
+    ReportDB -- IDBR
 }
 
-cloud "AWS ECS - Locais" {
+package "Microsserviço Locais" {
 
-    node "Docker Container - Locais" {
+    component "Locais" as VenueService
 
-        component "Serviço Locais" as VenueService
+    interface "IDBLocais" as IDBL
 
-        interface "IDBLocais" as IDBL
+    database "PostgreSQL\nLocais DB" as VenueDB
 
-        database "Amazon RDS\nPostgreSQL Locais" as VenueDB
+    VenueService -- IVenues
 
-        VenueService -- IVenues
+    VenueService --( IDBL : TCP/IP
 
-        VenueService --( IDBL : TCP/IP
-
-        VenueDB -- IDBL
-    }
+    VenueDB -- IDBL
 }
 
-cloud "AWS ECS - Países" {
+package "Microsserviço Países" {
 
-    node "Docker Container - Países" {
+    component "Países" as CountryService
 
-        component "Serviço Países" as CountryService
+    interface "IDBPaises" as IDBP
 
-        interface "IDBPaises" as IDBP
+    database "PostgreSQL\nPaíses DB" as CountryDB
 
-        database "Amazon RDS\nPostgreSQL Países" as CountryDB
+    CountryService -- ICountries
 
-        CountryService -- ICountries
+    CountryService --( IDBP : TCP/IP
 
-        CountryService --( IDBP : TCP/IP
-
-        CountryDB -- IDBP
-    }
+    CountryDB -- IDBP
 }
 
-cloud "Serviço Externo - Email" {
+ExternalNotification -- ISMTP
 
-    component "SMTP / Email API" as EmailService
-
-    EmailService -- ISMTP
-}
-
-cloud "Serviço Externo - WhatsApp" {
-
-    component "WhatsApp Business API" as WhatsAppService
-
-    WhatsAppService -- IWhatsApp
-}
-
-cloud "AWS CloudWatch" {
-
-    component "Logs e Monitoramento" as CloudWatch
-}
-
-ReactApp --> ApiGateway : HTTPS
-
-ApiGateway --> ALB : HTTPS
-
-ALB --( IAuth : HTTP
-ALB --( ICompetitions : HTTP
-ALB --( IRegistrations : HTTP
-ALB --( IResults : HTTP
-ALB --( IReports : HTTP
-ALB --( IVenues : HTTP
-ALB --( ICountries : HTTP
+Gateway --( IAuth : HTTP
+Gateway --( ICompetitions : HTTP
+Gateway --( IRegistrations : HTTP
+Gateway --( IResults : HTTP
+Gateway --( IReports : HTTP
+Gateway --( IVenues : HTTP
+Gateway --( ICountries : HTTP
 
 RegistrationService --( IAuth : REST
 RegistrationService --( ICompetitions : REST
@@ -224,20 +160,10 @@ ResultService --> ResultQueue : Evento Resultado
 
 RegistrationQueue --> NotificationQueue : Publica Evento
 
-ResultQueue --> NotificationQueue : Publica Evento
-
 ResultQueue --> ReportService : Consumidor
 
+ResultQueue --> NotificationQueue : Publica Evento
+
 NotificationQueue --( ISMTP : SMTP
-
-NotificationQueue --( IWhatsApp : HTTPS API
-
-AuthService --> CloudWatch
-CompetitionService --> CloudWatch
-RegistrationService --> CloudWatch
-ResultService --> CloudWatch
-ReportService --> CloudWatch
-VenueService --> CloudWatch
-CountryService --> CloudWatch
 
 @enduml

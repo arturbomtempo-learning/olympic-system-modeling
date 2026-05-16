@@ -3,214 +3,220 @@
 skinparam componentStyle uml2
 skinparam shadowing false
 skinparam packageStyle rectangle
+skinparam linetype ortho
 
 top to bottom direction
 
 title Diagrama de Implantação - Sistema de Gestão Olímpica
 
-actor "Cliente" as Client
+node "Vercel" {
 
-node "Cliente Web" {
-
-    artifact "Aplicação React" as ReactApp
+        artifact "Aplicação React" as ReactApp
 }
 
-node "AWS - API Gateway" {
+cloud "AWS - API Gateway" {
 
-    component "Gateway REST" as ApiGateway
+    component "Amazon API Gateway" as ApiGateway
 }
 
-node "AWS - RabbitMQ" {
+cloud "AWS - Load Balancer" {
 
-    queue "Fila Inscrições" as RegistrationQueue
-    queue "Fila Resultados" as ResultQueue
-    queue "Fila Notificações" as NotificationQueue
+    component "Application Load Balancer" as ALB
 }
 
-' =====================================================
-' MICROSSERVIÇO AUTENTICAÇÃO
-' =====================================================
+cloud "AWS - RabbitMQ" {
 
-cloud "AWS - Autenticação" {
+    node "Amazon EC2" {
 
-    node "Docker - Autenticação" {
+        node "Docker Container - RabbitMQ" {
 
-        node "Container Autenticação" {
+            component "RabbitMQ Broker" as RabbitMQ
 
-            component "Serviço Autenticação" as AuthService
-
-            database "PostgreSQL\nUsuários DB" as UserDB
+            queue "Fila Inscrições" as RegistrationQueue
+            queue "Fila Resultados" as ResultQueue
+            queue "Fila Notificações" as NotificationQueue
         }
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO COMPETIÇÕES
-' =====================================================
+interface "IAuth" as IAuth
+interface "ICompeticoes" as ICompetitions
+interface "IInscricoes" as IRegistrations
+interface "IResultados" as IResults
+interface "IRelatorios" as IReports
+interface "ILocais" as IVenues
+interface "IPaises" as ICountries
 
-cloud "AWS - Competições" {
+interface "ISMTP" as ISMTP
+interface "IWhatsApp" as IWhatsApp
 
-    node "Docker - Competições" {
+cloud "AWS ECS - Autenticação" {
 
-        node "Container Competições" {
+    node "Docker Container - Auth" {
 
-            component "Serviço Competições" as CompetitionService
+        component "Serviço Autenticação" as AuthService
 
-            database "PostgreSQL\nCompetições DB" as CompetitionDB
-        }
+        interface "IDBUsuarios" as IDBU
+
+        database "Amazon RDS\nPostgreSQL Usuários" as UserDB
+
+        AuthService -- IAuth
+
+        AuthService --( IDBU : TCP/IP
+
+        UserDB -- IDBU
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO INSCRIÇÕES
-' =====================================================
+cloud "AWS ECS - Competições" {
 
-cloud "AWS - Inscrições" {
+    node "Docker Container - Competições" {
 
-    node "Docker - Inscrições" {
+        component "Serviço Competições" as CompetitionService
 
-        node "Container Inscrições" {
+        interface "IDBCompeticoes" as IDBC
 
-            component "Serviço Inscrições" as RegistrationService
+        database "Amazon RDS\nPostgreSQL Competições" as CompetitionDB
 
-            database "PostgreSQL\nInscrições DB" as RegistrationDB
-        }
+        CompetitionService -- ICompetitions
+
+        CompetitionService --( IDBC : TCP/IP
+
+        CompetitionDB -- IDBC
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO RESULTADOS
-' =====================================================
+cloud "AWS ECS - Inscrições" {
 
-cloud "AWS - Resultados" {
+    node "Docker Container - Inscrições" {
 
-    node "Docker - Resultados" {
+        component "Serviço Inscrições" as RegistrationService
 
-        node "Container Resultados" {
+        interface "IDBInscricoes" as IDBI
 
-            component "Serviço Resultados" as ResultService
+        database "Amazon RDS\nPostgreSQL Inscrições" as RegistrationDB
 
-            database "PostgreSQL\nResultados DB" as ResultDB
-        }
+        RegistrationService -- IRegistrations
+
+        RegistrationService --( IDBI : TCP/IP
+
+        RegistrationDB -- IDBI
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO RELATÓRIOS
-' =====================================================
+cloud "AWS ECS - Resultados" {
 
-cloud "AWS - Relatórios" {
+    node "Docker Container - Resultados" {
 
-    node "Docker - Relatórios" {
+        component "Serviço Resultados" as ResultService
 
-        node "Container Relatórios" {
+        interface "IDBResultados" as IDBRes
 
-            component "Serviço Relatórios" as ReportService
+        database "Amazon RDS\nPostgreSQL Resultados" as ResultDB
 
-            database "PostgreSQL\nRelatórios DB" as ReportDB
-        }
+        ResultService -- IResults
+
+        ResultService --( IDBRes : TCP/IP
+
+        ResultDB -- IDBRes
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO LOCAIS
-' =====================================================
+cloud "AWS ECS - Relatórios" {
 
-cloud "AWS - Locais" {
+    node "Docker Container - Relatórios" {
 
-    node "Docker - Locais" {
+        component "Serviço Relatórios" as ReportService
 
-        node "Container Locais" {
+        interface "IDBRelatorios" as IDBR
 
-            component "Serviço Locais" as VenueService
+        database "Amazon RDS\nPostgreSQL Relatórios" as ReportDB
 
-            database "PostgreSQL\nLocais DB" as VenueDB
-        }
+        ReportService -- IReports
+
+        ReportService --( IDBR : TCP/IP
+
+        ReportDB -- IDBR
     }
 }
 
-' =====================================================
-' MICROSSERVIÇO PAÍSES
-' =====================================================
+cloud "AWS ECS - Locais" {
 
-cloud "AWS - Países" {
+    node "Docker Container - Locais" {
 
-    node "Docker - Países" {
+        component "Serviço Locais" as VenueService
 
-        node "Container Países" {
+        interface "IDBLocais" as IDBL
 
-            component "Serviço Países" as CountryService
+        database "Amazon RDS\nPostgreSQL Locais" as VenueDB
 
-            database "PostgreSQL\nPaíses DB" as CountryDB
-        }
+        VenueService -- IVenues
+
+        VenueService --( IDBL : TCP/IP
+
+        VenueDB -- IDBL
     }
 }
 
-' =====================================================
-' SERVIÇO EXTERNO
-' =====================================================
+cloud "AWS ECS - Países" {
 
-cloud "Serviço Externo" {
+    node "Docker Container - Países" {
 
-    component "Email / WhatsApp API" as ExternalNotification
+        component "Serviço Países" as CountryService
+
+        interface "IDBPaises" as IDBP
+
+        database "Amazon RDS\nPostgreSQL Países" as CountryDB
+
+        CountryService -- ICountries
+
+        CountryService --( IDBP : TCP/IP
+
+        CountryDB -- IDBP
+    }
 }
 
-' =====================================================
-' COMUNICAÇÃO CLIENTE
-' =====================================================
+cloud "Serviço Externo - Email" {
 
-Client --> ReactApp : HTTPS
+    component "SMTP / Email API" as EmailService
+
+    EmailService -- ISMTP
+}
+
+cloud "Serviço Externo - WhatsApp" {
+
+    component "WhatsApp Business API" as WhatsAppService
+
+    WhatsAppService -- IWhatsApp
+}
+
+cloud "AWS CloudWatch" {
+
+    component "Logs e Monitoramento" as CloudWatch
+}
 
 ReactApp --> ApiGateway : HTTPS
 
-' =====================================================
-' GATEWAY -> MICROSSERVIÇOS
-' =====================================================
+ApiGateway --> ALB : HTTPS
 
-ApiGateway --> AuthService : HTTP/REST
-ApiGateway --> CompetitionService : HTTP/REST
-ApiGateway --> RegistrationService : HTTP/REST
-ApiGateway --> ResultService : HTTP/REST
-ApiGateway --> ReportService : HTTP/REST
-ApiGateway --> VenueService : HTTP/REST
-ApiGateway --> CountryService : HTTP/REST
+ALB --( IAuth : HTTP
+ALB --( ICompetitions : HTTP
+ALB --( IRegistrations : HTTP
+ALB --( IResults : HTTP
+ALB --( IReports : HTTP
+ALB --( IVenues : HTTP
+ALB --( ICountries : HTTP
 
-' =====================================================
-' COMUNICAÇÃO ENTRE MICROSSERVIÇOS
-' =====================================================
+RegistrationService --( IAuth : REST
+RegistrationService --( ICompetitions : REST
 
-RegistrationService --> AuthService : REST
-RegistrationService --> CompetitionService : REST
+CompetitionService --( IVenues : REST
 
-CompetitionService --> VenueService : REST
+ResultService --( ICompetitions : REST
+ResultService --( IAuth : REST
 
-ResultService --> CompetitionService : REST
-ResultService --> AuthService : REST
-
-ReportService --> ResultService : REST
-ReportService --> CountryService : REST
-
-' =====================================================
-' ACESSO AOS BANCOS
-' =====================================================
-
-AuthService --> UserDB : TCP/IP
-
-CompetitionService --> CompetitionDB : TCP/IP
-
-RegistrationService --> RegistrationDB : TCP/IP
-
-ResultService --> ResultDB : TCP/IP
-
-ReportService --> ReportDB : TCP/IP
-
-VenueService --> VenueDB : TCP/IP
-
-CountryService --> CountryDB : TCP/IP
-
-' =====================================================
-' MENSAGERIA
-' =====================================================
+ReportService --( IResults : REST
+ReportService --( ICountries : REST
 
 RegistrationService --> RegistrationQueue : Evento Inscrição
 
@@ -222,6 +228,16 @@ ResultQueue --> NotificationQueue : Publica Evento
 
 ResultQueue --> ReportService : Consumidor
 
-NotificationQueue --> ExternalNotification : SMTP/API
+NotificationQueue --( ISMTP : SMTP
+
+NotificationQueue --( IWhatsApp : HTTPS API
+
+AuthService --> CloudWatch
+CompetitionService --> CloudWatch
+RegistrationService --> CloudWatch
+ResultService --> CloudWatch
+ReportService --> CloudWatch
+VenueService --> CloudWatch
+CountryService --> CloudWatch
 
 @enduml
