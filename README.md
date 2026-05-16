@@ -66,7 +66,7 @@ No SGO, foram identificados três atores principais:
 - **Administrador**: herda de Usuário; possui acesso total à gestão do sistema.
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/use-case-diagram.png"/>
+  <img src="./images/use-case-diagram.png"/>
 </p>
 
 ---
@@ -84,7 +84,7 @@ No SGO, as classes foram organizadas em cinco pacotes de domínio:
 - **Comunicação**: `Notificacao`.
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/class-diagram.png"/>
+  <img src="./images/class-diagram.png"/>
 </p>
 
 ---
@@ -106,7 +106,7 @@ No SGO, a estrutura segue o padrão arquitetural em camadas:
 - **`enums`**: enumerações de domínio (`StatusCompeticao`, `TipoMedalha`, etc.).
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/package-diagram.png"/>
+  <img src="./images/package-diagram.png"/>
 </p>
 
 ---
@@ -124,7 +124,7 @@ No SGO, a arquitetura de componentes contempla:
 - **Serviços externos**: integração com APIs de e-mail e WhatsApp.
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/component-diagram.png"/>
+  <img src="./images/component-diagram.png"/>
 </p>
 
 ---
@@ -143,7 +143,7 @@ No SGO, a infraestrutura projetada utiliza serviços da **AWS** combinados com a
 - **Amazon EC2 + Docker (RabbitMQ)**: broker de mensagens para as filas assíncronas.
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/deployment-diagram.png"/>
+  <img src="./images/deployment-diagram.png"/>
 </p>
 
 ---
@@ -162,7 +162,7 @@ No SGO, o diagrama de sequência cobre os principais fluxos do sistema:
 6. **Geração de Relatório**: geração de relatório de medalhas e ranking de países.
 
 <p align="center">
-  <img width="700px" src="https://github.com/arturbomtempo/olympic-system-modeling/blob/main/images/sequence-diagram.png"/>
+  <img src="./images/sequence-diagram.png"/>
 </p>
 
 ---
