@@ -177,23 +177,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** usuário do sistema (Atleta ou Administrador), **quero** realizar login com meu e-mail e senha, **para** acessar as funcionalidades disponíveis de acordo com o meu perfil.
 
-**Critérios de aceitação:**
-
-- O sistema deve validar o e-mail e a senha informados.
-- Em caso de credenciais inválidas, o sistema deve exibir uma mensagem de erro clara.
-- Em caso de sucesso, o sistema deve gerar um token de acesso (JWT) e redirecionar o usuário para a área correspondente ao seu perfil.
-
 ---
 
 ### US02: Recuperar Senha
 
 > **Como** usuário do sistema, **quero** recuperar minha senha em caso de esquecimento, **para** retomar o acesso à minha conta sem a necessidade de intervenção de um administrador.
-
-**Critérios de aceitação:**
-
-- O sistema deve oferecer um fluxo de recuperação acessível a partir da tela de login.
-- O usuário deve receber um link de redefinição de senha no e-mail cadastrado.
-- O link deve expirar após um período determinado por questões de segurança.
 
 ---
 
@@ -201,23 +189,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** administrador, **quero** cadastrar novas competições olímpicas no sistema, **para** que elas fiquem disponíveis para inscrição e acompanhamento pelos atletas.
 
-**Critérios de aceitação:**
-
-- O administrador deve informar: nome da modalidade, data, horário e local.
-- O sistema deve validar a disponibilidade do local antes de confirmar o cadastro.
-- A competição deve ser criada com o status inicial `AGENDADA`.
-
 ---
 
 ### US04: Consultar Competições
 
 > **Como** atleta, **quero** consultar as competições disponíveis no sistema, **para** verificar as modalidades, datas, horários e locais antes de realizar minha inscrição.
-
-**Critérios de aceitação:**
-
-- O sistema deve listar todas as competições com status ativo.
-- O atleta deve poder filtrar competições por modalidade, data ou status.
-- As informações exibidas devem incluir: nome da modalidade, data, horário e local.
 
 ---
 
@@ -225,24 +201,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** administrador, **quero** cadastrar atletas no sistema, **para** que eles possam ser inscritos em competições e ter seus resultados registrados.
 
-**Critérios de aceitação:**
-
-- O administrador deve informar os dados do atleta: nome, CPF, e-mail, data de nascimento, altura, peso e país representado.
-- O sistema deve validar a unicidade do CPF e do e-mail.
-- Após o cadastro, o atleta deve receber um e-mail com suas credenciais de acesso.
-
 ---
 
 ### US06: Inscrever Atleta em Competição
 
 > **Como** atleta, **quero** me inscrever em uma competição disponível, **para** participar oficialmente da modalidade de meu interesse nos jogos olímpicos.
-
-**Critérios de aceitação:**
-
-- O atleta deve poder selecionar uma competição e confirmar a inscrição.
-- O sistema deve verificar se o atleta já está inscrito na mesma competição.
-- Após a inscrição, uma mensagem de confirmação deve ser enviada ao atleta (e-mail ou WhatsApp).
-- A inscrição deve ser criada com o status `PENDENTE` até a confirmação do administrador.
 
 ---
 
@@ -250,23 +213,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** administrador, **quero** cadastrar os locais esportivos disponíveis no sistema, **para** que eles possam ser alocados às competições durante o planejamento do evento.
 
-**Critérios de aceitação:**
-
-- O administrador deve informar: nome do local, endereço e capacidade máxima.
-- O sistema deve impedir o cadastro de locais com nome duplicado.
-- O local deve ficar disponível imediatamente para alocação após o cadastro.
-
 ---
 
 ### US08: Alocar Local para Competição
 
 > **Como** administrador, **quero** alocar um local esportivo a uma competição, **para** garantir que cada evento tenha um espaço físico reservado e organizado.
-
-**Critérios de aceitação:**
-
-- O administrador deve selecionar a competição e o local desejado.
-- O sistema deve validar automaticamente a disponibilidade do local na data e horário informados.
-- Em caso de conflito de horário, o sistema deve notificar o administrador e impedir a alocação.
 
 ---
 
@@ -274,23 +225,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** sistema, **quero** validar automaticamente a disponibilidade de um local sempre que houver uma tentativa de alocação ou cadastro de competição, **para** evitar conflitos de agendamento entre diferentes eventos.
 
-**Critérios de aceitação:**
-
-- A validação deve ser disparada automaticamente como parte dos fluxos de cadastro de competição e alocação de local.
-- O sistema deve verificar se o local já possui outro evento agendado na mesma data e horário.
-- O resultado da validação deve influenciar diretamente a conclusão ou rejeição da operação em curso.
-
 ---
 
 ### US10: Registrar Resultado
 
 > **Como** administrador, **quero** registrar o resultado de um atleta em uma competição, **para** que a colocação, pontuação e eventual medalha sejam documentadas oficialmente no sistema.
-
-**Critérios de aceitação:**
-
-- O administrador deve informar: atleta, competição, colocação, pontuação e tipo de medalha (Ouro, Prata, Bronze ou nenhuma).
-- O sistema deve notificar o atleta sobre o resultado registrado.
-- O resultado deve ficar disponível para consulta imediatamente após o registro.
 
 ---
 
@@ -298,23 +237,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** atleta, **quero** consultar os resultados das competições das quais participei, **para** acompanhar meu desempenho e minhas conquistas ao longo dos jogos.
 
-**Critérios de aceitação:**
-
-- O atleta deve visualizar somente os resultados vinculados ao seu perfil.
-- As informações exibidas devem incluir: competição, colocação, pontuação e medalha conquistada (se houver).
-- Os resultados devem ser exibidos em ordem cronológica.
-
 ---
 
 ### US12: Gerar Relatório de Medalhas
 
 > **Como** administrador, **quero** gerar um relatório completo de medalhas conquistadas nos jogos, **para** ter uma visão consolidada do desempenho de atletas e países ao longo do evento.
-
-**Critérios de aceitação:**
-
-- O relatório deve listar todos os atletas que conquistaram medalhas, agrupados por tipo (Ouro, Prata, Bronze).
-- O relatório deve ser gerado com a data de criação registrada.
-- O administrador deve poder exportar ou visualizar o relatório diretamente pelo sistema.
 
 ---
 
@@ -322,23 +249,11 @@ As histórias de usuário foram elaboradas a partir dos casos de uso identificad
 
 > **Como** administrador, **quero** gerar um ranking de países com base nas medalhas conquistadas por seus atletas, **para** acompanhar o quadro de medalhas geral dos jogos olímpicos.
 
-**Critérios de aceitação:**
-
-- O ranking deve ser calculado priorizando o número de medalhas de Ouro, seguido de Prata e depois Bronze.
-- O ranking deve ser acessado como uma extensão do relatório de medalhas.
-- As informações devem incluir: posição, país, total de ouros, pratas e bronzes.
-
 ---
 
 ### US14: Confirmação de Inscrição
 
 > **Como** administrador, **quero** confirmar ou rejeitar as inscrições pendentes de atletas em competições, **para** garantir que apenas inscrições válidas e dentro dos critérios sejam efetivadas.
-
-**Critérios de aceitação:**
-
-- O administrador deve visualizar a lista de inscrições com status `PENDENTE`.
-- Ao confirmar, o status da inscrição deve ser atualizado para `CONFIRMADA` e o atleta notificado.
-- Ao rejeitar, o status deve ser atualizado para `CANCELADA` e o atleta notificado com a justificativa.
 
 ---
 
