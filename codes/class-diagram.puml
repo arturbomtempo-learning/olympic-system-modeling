@@ -1,4 +1,5 @@
 @startuml
+
 skinparam classAttributeIconSize 0
 
 abstract class Usuario {
@@ -7,9 +8,9 @@ abstract class Usuario {
     - email : String
     - senha : String
 
-    + {abstract} Autenticar()
-    + RedefinirSenha()
-    + Logout()
+    + autenticar()
+    + redefinirSenha()
+    + logout()
 }
 
 class Atleta {
@@ -17,8 +18,7 @@ class Atleta {
     - altura : double
     - peso : double
 
-    + Cadastrar()
-    + Autenticar()
+    + gerenciar()
 }
 
 class Administrador {
@@ -26,18 +26,17 @@ class Administrador {
     - cargo : String
     - nivelAcesso : int
 
-    + Cadastrar()
-    + Autenticar()
+    + gerenciar()
 }
 
 class Competicao {
     - nomeModalidade : String
     - data : Date
     - horario : Time
+    - status : StatusCompeticao
 
-    + Cadastrar()
-    + ConsultarInformacoes()
-    + ValidarDisponibilidadeLocal()
+    + gerenciar()
+    + consultarInformacoes()
 }
 
 class Local {
@@ -45,33 +44,69 @@ class Local {
     - endereco : String
     - capacidade : int
 
-    + Cadastrar()
-    + VerificarCapacidade()
+    + gerenciar()
+    + alocar()
+    + verificarCapacidade()
+    + validarDisponibilidadeLocal()
 }
 
 class Inscricao {
     - dataInscricao : Date
-    - status : String
+    - status : StatusInscricao
 
-    + Inscrever()
-    + ConfirmarInscricao()
-    + CancelarInscricao()
+    + inscrever()
+    + confirmarInscricao()
+    + cancelarInscricao()
 }
 
 class Resultado {
     - colocacao : int
     - pontuacao : double
+    - medalha : TipoMedalha
 
-    + Registrar()
-    + GerarRanking()
-    + GerarRelatorioMedalhas()
+    + registrar()
+    + consultar()
+}
+
+class Relatorio {
+    - dataGeracao : Date
+    - tipo : String
+
+    + gerarRelatorioMedalhas()
+    + gerarRankingPaises()
+}
+
+class Notificacao {
+    - mensagem : String
+    - dataEnvio : Date
+
+    + enviar()
 }
 
 class Pais {
     - nome : String
     - sigla : String
 
-    + Cadastrar()
+    + gerenciar()
+}
+
+enum StatusCompeticao {
+    ATIVA
+    CANCELADA
+    ENCERRADA
+}
+
+enum StatusInscricao {
+    CONFIRMADA
+    PENDENTE
+    CANCELADA
+}
+
+enum TipoMedalha {
+    OURO
+    PRATA
+    BRONZE
+    NENHUM
 }
 
 Usuario <|-- Atleta
@@ -89,5 +124,11 @@ Competicao "1" *-- "*" Resultado
 
 Resultado "*" -- "1" Atleta
 
+Relatorio "1" -- "*" Resultado
+
+Atleta "1" -- "*" Notificacao
+Administrador "1" -- "*" Notificacao
+
 Administrador "1" -- "*" Competicao
+
 @enduml
