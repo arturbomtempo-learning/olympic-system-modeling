@@ -1,145 +1,474 @@
 @startuml
 
-autonumber
+title Diagrama de Sequência - Sistema de Gestão Olímpica
 
+actor Usuário
 actor Administrador
 actor Atleta
 
-participant "Tela do Sistema" as Tela
-participant "ControleUsuario" as ControleUsuario
-participant "ControleCompeticao" as ControleCompeticao
-participant "ControleLocal" as ControleLocal
-participant "ControleResultado" as ControleResultado
+participant "Frontend Web" as Frontend
+participant "API Gateway" as Gateway
 
-participant "Competicao" as Competicao
-participant "Inscricao" as Inscricao
-participant "Local" as Local
-participant "Resultado" as Resultado
+participant "Serviço\nAutenticação" as AuthService
+participant "Serviço\nCompetições" as CompetitionService
+participant "Serviço\nInscrições" as RegistrationService
+participant "Serviço\nResultados" as ResultService
+participant "Serviço\nRelatórios" as ReportService
+participant "Serviço\nLocais" as VenueService
+participant "Serviço\nPaíses" as CountryService
 
-== Login ==
+queue "Fila Competições" as CompetitionQueue
+queue "Fila Resultados" as ResultQueue
+queue "Fila Notificações" as NotificationQueue
 
-Administrador -> Tela : realizarLogin()
+database "DB Usuários" as UserDB
+database "DB Competições" as CompetitionDB
+database "DB Inscrições" as RegistrationDB
+database "DB Resultados" as ResultDB
+database "DB Relatórios" as ReportDB
+database "DB Locais" as VenueDB
+database "DB Países" as CountryDB
 
-Tela -> ControleUsuario : autenticarUsuario()
-activate ControleUsuario
+participant "Email API" as EmailAPI
+participant "WhatsApp API" as WhatsAppAPI
 
-ControleUsuario --> Tela : acessoLiberado()
+== 1. Autenticação ==
 
-deactivate ControleUsuario
+Usuário -> Frontend : login(email, senha)
+activate Frontend
 
-== Cadastro de Competição ==
+Frontend -> Gateway : autenticar(email, senha)
+activate Gateway
 
-Administrador -> Tela : cadastrarCompeticao()
+Gateway -> AuthService : validarCredenciais(email, senha)
+activate AuthService
 
-Tela -> ControleCompeticao : solicitarCadastro()
-activate ControleCompeticao
+AuthService -> UserDB : buscarUsuario(email)
+activate UserDB
 
-ControleCompeticao -> Competicao : criarCompeticao()
-activate Competicao
+UserDB --> AuthService : dadosUsuario
+deactivate UserDB
 
-Competicao --> ControleCompeticao : competicaoCadastrada()
+alt Credenciais inválidas
 
-deactivate Competicao
+    AuthService --> Gateway : erroAutenticacao()
 
-ControleCompeticao --> Tela : cadastroRealizado()
+    Gateway --> Frontend : erroLogin()
 
-deactivate ControleCompeticao
+    Frontend --> Usuário : exibirErro()
 
-== Cadastro de Local ==
+else Credenciais válidas
 
-Administrador -> Tela : cadastrarLocal()
+    AuthService --> Gateway : tokenAcesso(jwt)
 
-Tela -> ControleLocal : solicitarCadastro()
-activate ControleLocal
+    Gateway --> Frontend : loginRealizado(token)
 
-ControleLocal -> Local : criarLocal()
-activate Local
+    Frontend --> Usuário : acessoLiberado()
 
-Local --> ControleLocal : localCadastrado()
+end
 
-deactivate Local
+deactivate AuthService
+deactivate Gateway
+deactivate Frontend
 
-ControleLocal --> Tela : cadastroRealizado()
+== 2. Cadastro de Atleta ==
 
-deactivate ControleLocal
+Administrador -> Frontend : cadastrarAtleta(dadosAtleta)
+activate Frontend
 
-== Alocação de Local ==
+Frontend -> Gateway : cadastrarAtleta(dadosAtleta)
+activate Gateway
 
-Administrador -> Tela : alocarLocal()
+Gateway -> AuthService : validarAdministrador()
+activate AuthService
 
-Tela -> ControleCompeticao : solicitarAlocacao()
-activate ControleCompeticao
+AuthService -> UserDB : verificarEmail(email)
+activate UserDB
 
-ControleCompeticao -> Local : verificarDisponibilidade()
-activate Local
+UserDB --> AuthService : resultado
+deactivate UserDB
 
-Local --> ControleCompeticao : localDisponivel()
+alt Email já cadastrado
 
-deactivate Local
+    AuthService --> Gateway : erroEmailDuplicado()
 
-ControleCompeticao -> Competicao : associarLocal()
-activate Competicao
+    Gateway --> Frontend : cadastroNegado()
 
-Competicao --> ControleCompeticao : localAssociado()
+else Email disponível
 
-deactivate Competicao
+    AuthService -> CountryService : validarPais(sigla)
+    activate CountryService
 
-ControleCompeticao --> Tela : alocacaoConcluida()
+    CountryService -> CountryDB : buscarPais(sigla)
+    activate CountryDB
 
-deactivate ControleCompeticao
+    CountryDB --> CountryService : dadosPais
+    deactivate CountryDB
 
-== Inscrição em Competição ==
+    CountryService --> AuthService : paisValido()
+    deactivate CountryService
 
-Atleta -> Tela : inscreverEmCompeticao()
+    AuthService -> UserDB : salvarAtleta(dadosAtleta)
+    activate UserDB
 
-Tela -> ControleCompeticao : solicitarInscricao()
-activate ControleCompeticao
+    UserDB --> AuthService : atletaID
+    deactivate UserDB
 
-ControleCompeticao -> Inscricao : criarInscricao()
-activate Inscricao
+    AuthService --> Gateway : atletaCadastrado(atletaID)
 
-Inscricao --> ControleCompeticao : inscricaoConfirmada()
+    Gateway --> Frontend : cadastroRealizado()
 
-deactivate Inscricao
+end
 
-ControleCompeticao --> Tela : inscricaoRealizada()
+Frontend --> Administrador : confirmaçãoCadastro()
 
-deactivate ControleCompeticao
+deactivate AuthService
+deactivate Gateway
+deactivate Frontend
 
-== Registro de Resultados ==
+== 3. Cadastro de Competição ==
 
-Administrador -> Tela : registrarResultados()
+Administrador -> Frontend : cadastrarCompeticao(dados)
+activate Frontend
 
-Tela -> ControleResultado : solicitarRegistro()
-activate ControleResultado
+Frontend -> Gateway : criarCompeticao(dados)
+activate Gateway
 
-ControleResultado -> Resultado : registrarResultado()
-activate Resultado
+Gateway -> CompetitionService : criarCompeticao(dados)
+activate CompetitionService
 
-Resultado --> ControleResultado : resultadoRegistrado()
+CompetitionService -> VenueService : verificarDisponibilidade(local,data)
+activate VenueService
 
-deactivate Resultado
+VenueService -> VenueDB : consultarDisponibilidade(local)
+activate VenueDB
 
-ControleResultado --> Tela : registroConcluido()
+VenueDB --> VenueService : disponibilidade
+deactivate VenueDB
 
-deactivate ControleResultado
+VenueService --> CompetitionService : statusLocal
+deactivate VenueService
 
-== Relatório de Medalhas ==
+alt Local indisponível
 
-Administrador -> Tela : gerarRelatorio()
+    CompetitionService --> Gateway : erroLocalIndisponivel()
 
-Tela -> ControleResultado : solicitarRelatorio()
-activate ControleResultado
+    Gateway --> Frontend : operaçãoNegada()
 
-ControleResultado -> Resultado : gerarRanking()
-activate Resultado
+else Local disponível
 
-Resultado --> ControleResultado : relatorioGerado()
+    CompetitionService -> CompetitionDB : salvarCompeticao(dados)
+    activate CompetitionDB
 
-deactivate Resultado
+    CompetitionDB --> CompetitionService : competicaoID
+    deactivate CompetitionDB
 
-ControleResultado --> Tela : relatorioExibido()
+    CompetitionService -> CompetitionQueue : publicarCompeticaoCriada()
 
-deactivate ControleResultado
+    CompetitionService --> Gateway : competicaoCriada()
+
+    Gateway --> Frontend : cadastroRealizado()
+
+end
+
+Frontend --> Administrador : confirmaçãoCompeticao()
+
+deactivate CompetitionService
+deactivate Gateway
+deactivate Frontend
+
+== 4. Inscrição em Competição ==
+
+Atleta -> Frontend : inscreverCompeticao(atletaID, competicaoID)
+activate Frontend
+
+Frontend -> Gateway : realizarInscricao()
+activate Gateway
+
+Gateway -> RegistrationService : realizarInscricao()
+activate RegistrationService
+
+RegistrationService -> AuthService : validarAtleta(atletaID)
+activate AuthService
+
+AuthService -> UserDB : buscarAtleta(atletaID)
+activate UserDB
+
+UserDB --> AuthService : dadosAtleta
+deactivate UserDB
+
+AuthService --> RegistrationService : atletaValido()
+deactivate AuthService
+
+RegistrationService -> CompetitionService : validarCompeticao(competicaoID)
+activate CompetitionService
+
+CompetitionService -> CompetitionDB : buscarCompeticao()
+activate CompetitionDB
+
+CompetitionDB --> CompetitionService : dadosCompeticao
+deactivate CompetitionDB
+
+CompetitionService --> RegistrationService : competicaoValida()
+deactivate CompetitionService
+
+RegistrationService -> RegistrationDB : verificarInscricao()
+activate RegistrationDB
+
+RegistrationDB --> RegistrationService : resultado
+deactivate RegistrationDB
+
+alt Inscrição duplicada
+
+    RegistrationService --> Gateway : erroInscricaoDuplicada()
+
+    Gateway --> Frontend : inscriçãoNegada()
+
+else Inscrição válida
+
+    RegistrationService -> RegistrationDB : salvarInscricao()
+    activate RegistrationDB
+
+    RegistrationDB --> RegistrationService : inscricaoID
+    deactivate RegistrationDB
+
+    RegistrationService -> NotificationQueue : publicarEventoInscricao()
+
+    NotificationQueue -> EmailAPI : enviarEmailConfirmacao()
+    activate EmailAPI
+
+    EmailAPI --> NotificationQueue : emailEnviado()
+    deactivate EmailAPI
+
+    NotificationQueue -> WhatsAppAPI : enviarMensagemConfirmacao()
+    activate WhatsAppAPI
+
+    WhatsAppAPI --> NotificationQueue : mensagemEnviada()
+    deactivate WhatsAppAPI
+
+    RegistrationService --> Gateway : inscricaoConfirmada()
+
+    Gateway --> Frontend : inscriçãoRealizada()
+
+end
+
+Frontend --> Atleta : confirmaçãoInscrição()
+
+deactivate RegistrationService
+deactivate Gateway
+deactivate Frontend
+
+== 5. Cancelamento de Inscrição ==
+
+Atleta -> Frontend : cancelarInscricao(inscricaoID)
+activate Frontend
+
+Frontend -> Gateway : cancelarInscricao()
+activate Gateway
+
+Gateway -> RegistrationService : cancelarInscricao()
+activate RegistrationService
+
+RegistrationService -> RegistrationDB : buscarInscricao()
+activate RegistrationDB
+
+RegistrationDB --> RegistrationService : dadosInscricao
+deactivate RegistrationDB
+
+alt Competição iniciada
+
+    RegistrationService --> Gateway : cancelamentoNaoPermitido()
+
+    Gateway --> Frontend : operaçãoNegada()
+
+else Cancelamento permitido
+
+    RegistrationService -> RegistrationDB : atualizarStatus(CANCELADA)
+    activate RegistrationDB
+
+    RegistrationDB --> RegistrationService : inscriçãoCancelada()
+    deactivate RegistrationDB
+
+    RegistrationService --> Gateway : cancelamentoRealizado()
+
+    Gateway --> Frontend : cancelamentoConfirmado()
+
+end
+
+Frontend --> Atleta : confirmaçãoCancelamento()
+
+deactivate RegistrationService
+deactivate Gateway
+deactivate Frontend
+
+== 6. Registro de Resultados ==
+
+Administrador -> Frontend : registrarResultado(classificacao)
+activate Frontend
+
+Frontend -> Gateway : registrarResultado()
+activate Gateway
+
+Gateway -> ResultService : registrarResultado()
+activate ResultService
+
+ResultService -> CompetitionService : validarCompeticao()
+activate CompetitionService
+
+CompetitionService -> CompetitionDB : buscarCompeticao()
+activate CompetitionDB
+
+CompetitionDB --> CompetitionService : dadosCompeticao
+deactivate CompetitionDB
+
+CompetitionService --> ResultService : competicaoValida()
+deactivate CompetitionService
+
+ResultService -> ResultDB : salvarResultado()
+activate ResultDB
+
+ResultDB --> ResultService : resultadoID
+deactivate ResultDB
+
+ResultService -> ResultQueue : publicarResultado()
+
+par Atualizar Relatórios
+
+    ResultQueue -> ReportService : consumirEvento()
+    activate ReportService
+
+    ReportService -> ResultDB : consultarResultados()
+    activate ResultDB
+
+    ResultDB --> ReportService : resultados
+    deactivate ResultDB
+
+    ReportService -> ReportDB : atualizarRelatorio()
+    activate ReportDB
+
+    ReportDB --> ReportService : relatorioAtualizado()
+    deactivate ReportDB
+
+    deactivate ReportService
+
+else Enviar Notificações
+
+    ResultQueue -> NotificationQueue : publicarNotificacao()
+
+    NotificationQueue -> EmailAPI : enviarResultadoEmail()
+    activate EmailAPI
+
+    EmailAPI --> NotificationQueue : emailEnviado()
+    deactivate EmailAPI
+
+    NotificationQueue -> WhatsAppAPI : enviarResultadoWhatsApp()
+    activate WhatsAppAPI
+
+    WhatsAppAPI --> NotificationQueue : mensagemEnviada()
+    deactivate WhatsAppAPI
+
+end
+
+ResultService --> Gateway : resultadoRegistrado()
+
+Gateway --> Frontend : operaçãoRealizada()
+
+Frontend --> Administrador : confirmaçãoResultado()
+
+deactivate ResultService
+deactivate Gateway
+deactivate Frontend
+
+== 7. Cancelamento de Competição ==
+
+Administrador -> Frontend : cancelarCompeticao(competicaoID)
+activate Frontend
+
+Frontend -> Gateway : cancelarCompeticao()
+activate Gateway
+
+Gateway -> CompetitionService : cancelarCompeticao()
+activate CompetitionService
+
+CompetitionService -> CompetitionDB : buscarCompeticao()
+activate CompetitionDB
+
+CompetitionDB --> CompetitionService : dadosCompeticao
+deactivate CompetitionDB
+
+CompetitionService -> CompetitionDB : atualizarStatus(CANCELADA)
+activate CompetitionDB
+
+CompetitionDB --> CompetitionService : competicaoCancelada()
+deactivate CompetitionDB
+
+CompetitionService -> CompetitionQueue : publicarEventoCancelamento()
+
+loop Para cada atleta inscrito
+
+    CompetitionQueue -> NotificationQueue : publicarNotificacao()
+
+    NotificationQueue -> EmailAPI : enviarEmailCancelamento()
+    activate EmailAPI
+
+    EmailAPI --> NotificationQueue : emailEnviado()
+    deactivate EmailAPI
+
+    NotificationQueue -> WhatsAppAPI : enviarMensagemCancelamento()
+    activate WhatsAppAPI
+
+    WhatsAppAPI --> NotificationQueue : mensagemEnviada()
+    deactivate WhatsAppAPI
+
+end
+
+CompetitionService --> Gateway : cancelamentoRealizado()
+
+Gateway --> Frontend : operaçãoRealizada()
+
+Frontend --> Administrador : confirmaçãoCancelamento()
+
+deactivate CompetitionService
+deactivate Gateway
+deactivate Frontend
+
+== 8. Geração de Relatórios ==
+
+Administrador -> Frontend : gerarRelatorioMedalhas()
+activate Frontend
+
+Frontend -> Gateway : gerarRelatorio()
+activate Gateway
+
+Gateway -> ReportService : gerarRelatorioMedalhas()
+activate ReportService
+
+ReportService -> ResultDB : buscarResultados()
+activate ResultDB
+
+ResultDB --> ReportService : dadosResultados
+deactivate ResultDB
+
+ReportService -> CountryDB : buscarPaises()
+activate CountryDB
+
+CountryDB --> ReportService : dadosPaises
+deactivate CountryDB
+
+ReportService -> ReportDB : salvarRelatorio()
+activate ReportDB
+
+ReportDB --> ReportService : relatorioGerado()
+deactivate ReportDB
+
+ReportService --> Gateway : relatorioPDF()
+
+Gateway --> Frontend : downloadRelatorio()
+
+Frontend --> Administrador : relatórioDisponível()
+
+deactivate ReportService
+deactivate Gateway
+deactivate Frontend
 
 @enduml
