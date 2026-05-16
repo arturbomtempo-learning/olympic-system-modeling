@@ -1,38 +1,86 @@
 @startuml
 
-skinparam packageStyle rectangle
+package controller {
+    class UsuarioController
+    class CompeticaoController
+    class ResultadoController
+}
 
-package "Gerenciamento de Usuários" <<subsystem>> {
+package service {
+    class UsuarioService
+    class CompeticaoService
+    class ResultadoService
+    class NotificacaoService
+}
+
+package repository {
+    class UsuarioRepository
+    class CompeticaoRepository
+    class ResultadoRepository
+}
+
+package dto {
+    class UsuarioDTO
+    class CompeticaoDTO
+    class ResultadoDTO
+}
+
+package mapper {
+    class UsuarioMapper
+    class CompeticaoMapper
+    class ResultadoMapper
+}
+
+package exception {
+    class AutenticacaoException
+    class CompeticaoException
+    class InscricaoException
+}
+
+package model {
     class Usuario
     class Atleta
     class Administrador
-}
 
-package "Competições Olímpicas" <<subsystem>> {
     class Competicao
-    class Inscricao
-}
-
-package "Infraestrutura Esportiva" <<subsystem>> {
     class Local
-}
+    class Inscricao
 
-package "Resultados e Rankings" <<subsystem>> {
     class Resultado
-}
+    class Relatorio
 
-package "Cadastro de Países" <<subsystem>> {
     class Pais
 }
 
-"Gerenciamento de Usuários" ..> "Cadastro de Países"
+package notification {
+    class Notificacao
+}
 
-"Gerenciamento de Usuários" ..> "Competições Olímpicas"
+package security {
+    class Autenticacao
+}
 
-"Competições Olímpicas" ..> "Infraestrutura Esportiva"
+package enums {
+    enum StatusCompeticao
+    enum StatusInscricao
+    enum TipoMedalha
+}
 
-"Resultados e Rankings" ..> "Competições Olímpicas"
+controller ..> service
+controller ..> exception
+controller ..> dto
 
-"Resultados e Rankings" ..> "Gerenciamento de Usuários"
+service ..> repository
+service ..> mapper
+service ..> notification
+service ..> exception
+
+repository ..> model
+
+mapper ..> dto
+mapper ..> model
+
+security ..> model
+security ..> exception
 
 @enduml

@@ -2,111 +2,132 @@
 
 skinparam classAttributeIconSize 0
 
-abstract class Usuario {
-    - nome : String
-    - cpf : String
-    - email : String
-    - senha : String
+package "Gerenciamento de Usuários" {
 
-    + autenticar()
-    + redefinirSenha()
-    + logout()
+    abstract class Usuario {
+        - nome : String
+        - cpf : String
+        - email : String
+        - senha : String
+
+        + autenticar()
+        + redefinirSenha()
+        + logout()
+    }
+
+    class Atleta {
+        - dataNascimento : Date
+        - altura : double
+        - peso : double
+
+        + gerenciar()
+    }
+
+    class Administrador {
+        - matricula : String
+        - cargo : String
+        - nivelAcesso : int
+
+        + gerenciar()
+    }
 }
 
-class Atleta {
-    - dataNascimento : Date
-    - altura : double
-    - peso : double
+package "Competições Olímpicas" {
 
-    + gerenciar()
+    class Competicao {
+        - nomeModalidade : String
+        - data : Date
+        - horario : Time
+        - status : StatusCompeticao
+
+        + gerenciar()
+        + consultarInformacoes()
+    }
+
+    class Inscricao {
+        - dataInscricao : Date
+        - status : StatusInscricao
+
+        + inscrever()
+        + confirmarInscricao()
+        + cancelarInscricao()
+    }
 }
 
-class Administrador {
-    - matricula : String
-    - cargo : String
-    - nivelAcesso : int
+package "Infraestrutura Esportiva" {
 
-    + gerenciar()
+    class Local {
+        - nome : String
+        - endereco : String
+        - capacidade : int
+
+        + gerenciar()
+        + alocar()
+        + verificarCapacidade()
+        + validarDisponibilidadeLocal()
+    }
 }
 
-class Competicao {
-    - nomeModalidade : String
-    - data : Date
-    - horario : Time
-    - status : StatusCompeticao
+package "Resultados e Relatórios" {
 
-    + gerenciar()
-    + consultarInformacoes()
+    class Resultado {
+        - colocacao : int
+        - pontuacao : double
+        - medalha : TipoMedalha
+
+        + registrar()
+        + consultar()
+    }
+
+    class Relatorio {
+        - dataGeracao : Date
+        - tipo : String
+
+        + gerarRelatorioMedalhas()
+        + gerarRankingPaises()
+    }
 }
 
-class Local {
-    - nome : String
-    - endereco : String
-    - capacidade : int
+package "Comunicação" {
 
-    + gerenciar()
-    + alocar()
-    + verificarCapacidade()
-    + validarDisponibilidadeLocal()
+    class Notificacao {
+        - mensagem : String
+        - dataEnvio : Date
+
+        + enviar()
+    }
 }
 
-class Inscricao {
-    - dataInscricao : Date
-    - status : StatusInscricao
+package "Países Participantes" {
 
-    + inscrever()
-    + confirmarInscricao()
-    + cancelarInscricao()
+    class Pais {
+        - nome : String
+        - sigla : String
+
+        + gerenciar()
+    }
 }
 
-class Resultado {
-    - colocacao : int
-    - pontuacao : double
-    - medalha : TipoMedalha
+package "Enumerações do Sistema" {
 
-    + registrar()
-    + consultar()
-}
+    enum StatusCompeticao {
+        ATIVA
+        CANCELADA
+        ENCERRADA
+    }
 
-class Relatorio {
-    - dataGeracao : Date
-    - tipo : String
+    enum StatusInscricao {
+        CONFIRMADA
+        PENDENTE
+        CANCELADA
+    }
 
-    + gerarRelatorioMedalhas()
-    + gerarRankingPaises()
-}
-
-class Notificacao {
-    - mensagem : String
-    - dataEnvio : Date
-
-    + enviar()
-}
-
-class Pais {
-    - nome : String
-    - sigla : String
-
-    + gerenciar()
-}
-
-enum StatusCompeticao {
-    ATIVA
-    CANCELADA
-    ENCERRADA
-}
-
-enum StatusInscricao {
-    CONFIRMADA
-    PENDENTE
-    CANCELADA
-}
-
-enum TipoMedalha {
-    OURO
-    PRATA
-    BRONZE
-    NENHUM
+    enum TipoMedalha {
+        OURO
+        PRATA
+        BRONZE
+        NENHUM
+    }
 }
 
 Usuario <|-- Atleta
