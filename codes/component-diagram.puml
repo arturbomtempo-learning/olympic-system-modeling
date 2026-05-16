@@ -1,0 +1,169 @@
+@startuml
+
+skinparam componentStyle uml2
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+top to bottom direction
+
+title Diagrama de Componentes - Sistema de Gestão Olímpica
+
+component "Aplicação Web" as WebApp
+component "API Gateway" as Gateway
+
+queue "Fila Inscrições" as RegistrationQueue
+queue "Fila Resultados" as ResultQueue
+queue "Fila Notificações" as NotificationQueue
+
+component "Serviço Externo\nEmail / WhatsApp" as ExternalNotification
+
+WebApp --> Gateway : HTTP
+
+interface "IAuth" as IAuth
+interface "ICompeticoes" as ICompetitions
+interface "IInscricoes" as IRegistrations
+interface "IResultados" as IResults
+interface "IRelatorios" as IReports
+interface "ILocais" as IVenues
+interface "IPaises" as ICountries
+interface "ISMTP" as ISMTP
+
+package "Microsserviço Autenticação" {
+
+    component "Autenticação" as AuthService
+
+    interface "IDBUsuarios" as IDBU
+
+    database "PostgreSQL\nUsuários DB" as UserDB
+
+    AuthService -- IAuth
+
+    AuthService --( IDBU : TCP/IP
+
+    UserDB -- IDBU
+}
+
+package "Microsserviço Competições" {
+
+    component "Competições" as CompetitionService
+
+    interface "IDBCompeticoes" as IDBC
+
+    database "PostgreSQL\nCompetições DB" as CompetitionDB
+
+    CompetitionService -- ICompetitions
+
+    CompetitionService --( IDBC : TCP/IP
+
+    CompetitionDB -- IDBC
+}
+
+package "Microsserviço Inscrições" {
+
+    component "Inscrições" as RegistrationService
+
+    interface "IDBInscricoes" as IDBI
+
+    database "PostgreSQL\nInscrições DB" as RegistrationDB
+
+    RegistrationService -- IRegistrations
+
+    RegistrationService --( IDBI : TCP/IP
+
+    RegistrationDB -- IDBI
+}
+
+package "Microsserviço Resultados" {
+
+    component "Resultados" as ResultService
+
+    interface "IDBResultados" as IDBRes
+
+    database "PostgreSQL\nResultados DB" as ResultDB
+
+    ResultService -- IResults
+
+    ResultService --( IDBRes : TCP/IP
+
+    ResultDB -- IDBRes
+}
+
+package "Microsserviço Relatórios" {
+
+    component "Relatórios" as ReportService
+
+    interface "IDBRelatorios" as IDBR
+
+    database "PostgreSQL\nRelatórios DB" as ReportDB
+
+    ReportService -- IReports
+
+    ReportService --( IDBR : TCP/IP
+
+    ReportDB -- IDBR
+}
+
+package "Microsserviço Locais" {
+
+    component "Locais" as VenueService
+
+    interface "IDBLocais" as IDBL
+
+    database "PostgreSQL\nLocais DB" as VenueDB
+
+    VenueService -- IVenues
+
+    VenueService --( IDBL : TCP/IP
+
+    VenueDB -- IDBL
+}
+
+package "Microsserviço Países" {
+
+    component "Países" as CountryService
+
+    interface "IDBPaises" as IDBP
+
+    database "PostgreSQL\nPaíses DB" as CountryDB
+
+    CountryService -- ICountries
+
+    CountryService --( IDBP : TCP/IP
+
+    CountryDB -- IDBP
+}
+
+ExternalNotification -- ISMTP
+
+Gateway --( IAuth : HTTP
+Gateway --( ICompetitions : HTTP
+Gateway --( IRegistrations : HTTP
+Gateway --( IResults : HTTP
+Gateway --( IReports : HTTP
+Gateway --( IVenues : HTTP
+Gateway --( ICountries : HTTP
+
+RegistrationService --( IAuth : REST
+RegistrationService --( ICompetitions : REST
+
+CompetitionService --( IVenues : REST
+
+ResultService --( ICompetitions : REST
+ResultService --( IAuth : REST
+
+ReportService --( IResults : REST
+ReportService --( ICountries : REST
+
+RegistrationService --> RegistrationQueue : Evento Inscrição
+
+ResultService --> ResultQueue : Evento Resultado
+
+RegistrationQueue --> NotificationQueue : Publica Evento
+
+ResultQueue --> ReportService : Consumidor
+
+ResultQueue --> NotificationQueue : Publica Evento
+
+NotificationQueue --( ISMTP : SMTP
+
+@enduml
