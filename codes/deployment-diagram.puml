@@ -1,0 +1,227 @@
+@startuml
+
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+top to bottom direction
+
+title Diagrama de Implantação - Sistema de Gestão Olímpica
+
+actor "Cliente" as Client
+
+node "Cliente Web" {
+
+    artifact "Aplicação React" as ReactApp
+}
+
+node "AWS - API Gateway" {
+
+    component "Gateway REST" as ApiGateway
+}
+
+node "AWS - RabbitMQ" {
+
+    queue "Fila Inscrições" as RegistrationQueue
+    queue "Fila Resultados" as ResultQueue
+    queue "Fila Notificações" as NotificationQueue
+}
+
+' =====================================================
+' MICROSSERVIÇO AUTENTICAÇÃO
+' =====================================================
+
+cloud "AWS - Autenticação" {
+
+    node "Docker - Autenticação" {
+
+        node "Container Autenticação" {
+
+            component "Serviço Autenticação" as AuthService
+
+            database "PostgreSQL\nUsuários DB" as UserDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO COMPETIÇÕES
+' =====================================================
+
+cloud "AWS - Competições" {
+
+    node "Docker - Competições" {
+
+        node "Container Competições" {
+
+            component "Serviço Competições" as CompetitionService
+
+            database "PostgreSQL\nCompetições DB" as CompetitionDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO INSCRIÇÕES
+' =====================================================
+
+cloud "AWS - Inscrições" {
+
+    node "Docker - Inscrições" {
+
+        node "Container Inscrições" {
+
+            component "Serviço Inscrições" as RegistrationService
+
+            database "PostgreSQL\nInscrições DB" as RegistrationDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO RESULTADOS
+' =====================================================
+
+cloud "AWS - Resultados" {
+
+    node "Docker - Resultados" {
+
+        node "Container Resultados" {
+
+            component "Serviço Resultados" as ResultService
+
+            database "PostgreSQL\nResultados DB" as ResultDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO RELATÓRIOS
+' =====================================================
+
+cloud "AWS - Relatórios" {
+
+    node "Docker - Relatórios" {
+
+        node "Container Relatórios" {
+
+            component "Serviço Relatórios" as ReportService
+
+            database "PostgreSQL\nRelatórios DB" as ReportDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO LOCAIS
+' =====================================================
+
+cloud "AWS - Locais" {
+
+    node "Docker - Locais" {
+
+        node "Container Locais" {
+
+            component "Serviço Locais" as VenueService
+
+            database "PostgreSQL\nLocais DB" as VenueDB
+        }
+    }
+}
+
+' =====================================================
+' MICROSSERVIÇO PAÍSES
+' =====================================================
+
+cloud "AWS - Países" {
+
+    node "Docker - Países" {
+
+        node "Container Países" {
+
+            component "Serviço Países" as CountryService
+
+            database "PostgreSQL\nPaíses DB" as CountryDB
+        }
+    }
+}
+
+' =====================================================
+' SERVIÇO EXTERNO
+' =====================================================
+
+cloud "Serviço Externo" {
+
+    component "Email / WhatsApp API" as ExternalNotification
+}
+
+' =====================================================
+' COMUNICAÇÃO CLIENTE
+' =====================================================
+
+Client --> ReactApp : HTTPS
+
+ReactApp --> ApiGateway : HTTPS
+
+' =====================================================
+' GATEWAY -> MICROSSERVIÇOS
+' =====================================================
+
+ApiGateway --> AuthService : HTTP/REST
+ApiGateway --> CompetitionService : HTTP/REST
+ApiGateway --> RegistrationService : HTTP/REST
+ApiGateway --> ResultService : HTTP/REST
+ApiGateway --> ReportService : HTTP/REST
+ApiGateway --> VenueService : HTTP/REST
+ApiGateway --> CountryService : HTTP/REST
+
+' =====================================================
+' COMUNICAÇÃO ENTRE MICROSSERVIÇOS
+' =====================================================
+
+RegistrationService --> AuthService : REST
+RegistrationService --> CompetitionService : REST
+
+CompetitionService --> VenueService : REST
+
+ResultService --> CompetitionService : REST
+ResultService --> AuthService : REST
+
+ReportService --> ResultService : REST
+ReportService --> CountryService : REST
+
+' =====================================================
+' ACESSO AOS BANCOS
+' =====================================================
+
+AuthService --> UserDB : TCP/IP
+
+CompetitionService --> CompetitionDB : TCP/IP
+
+RegistrationService --> RegistrationDB : TCP/IP
+
+ResultService --> ResultDB : TCP/IP
+
+ReportService --> ReportDB : TCP/IP
+
+VenueService --> VenueDB : TCP/IP
+
+CountryService --> CountryDB : TCP/IP
+
+' =====================================================
+' MENSAGERIA
+' =====================================================
+
+RegistrationService --> RegistrationQueue : Evento Inscrição
+
+ResultService --> ResultQueue : Evento Resultado
+
+RegistrationQueue --> NotificationQueue : Publica Evento
+
+ResultQueue --> NotificationQueue : Publica Evento
+
+ResultQueue --> ReportService : Consumidor
+
+NotificationQueue --> ExternalNotification : SMTP/API
+
+@enduml
